@@ -1,0 +1,23 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="selectable-group-behavior.html">
+
+<dom-module id="selectable-group">
+  <template>
+
+    <content select="selectable-item"></content>
+
+  </template>
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'selectable-group',
+
+    behaviors: [
+      SelectableGroupBehavior
+    ]
+
+  });
+</script>

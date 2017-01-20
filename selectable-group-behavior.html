@@ -1,0 +1,84 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<script>
+(function() {
+  'use strict';
+
+  window.SelectableGroupBehavior = {
+
+    is: 'selectable-group',
+
+    properties: {
+
+      /**
+       * The list of selectable-item
+       */
+      items: {
+        type: Array,
+        readOnly: true,
+        notify: true,
+        value: function() {
+          return [];
+        }
+      },
+
+      activeSelection: {
+        type: Boolean,
+        value: false,
+        observer: '_activeSelectionChanged'
+      }
+
+    },
+
+    get selection() {
+      return this.items.filter(item => item.selected);
+    },
+
+    created() {
+      this._onItemSelectedChange = this._onItemSelectedChange.bind(this);
+    },
+
+    attached() {
+      this._observer = this._observeItems(this);
+      this._updateItems();
+
+      requestAnimationFrame(_ => {
+        this._toggleListeners(true);
+      });
+    },
+
+    detached() {
+      this._toggleListeners(false);
+    },
+
+    _toggleListeners(enable) {
+      const m = enable ? 'addEventListener' : 'removeEventListener';
+
+      this[m]('item-selected-change', this._onItemSelectedChange);
+    },
+
+    _onItemSelectedChange() {
+      this.activeSelection = Boolean(this.selection.length);
+    },
+
+    _activeSelectionChanged() {
+      this.items.forEach(item => {
+        item.selectOnDown = this.activeSelection;
+      });
+    },
+
+    _observeItems(node) {
+      return Polymer.dom(node).observeNodes(mutation => {
+        this._updateItems();
+      });
+    },
+
+    _updateItems: function() {
+      var nodes = Polymer.dom(this).queryDistributedElements('selectable-item');
+      this._setItems(nodes);
+    },
+
+  };
+
+}());
+</script>

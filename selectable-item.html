@@ -1,0 +1,223 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+
+<!--
+`selectable-item`
+
+@demo demo/index.html 
+-->
+
+<dom-module id="selectable-item">
+  <template>
+    <style>
+      :host {
+        display: inline-block;
+        overflow: hidden;
+        position: relative;
+
+        user-select: none;
+        -moz-user-select: none;
+        -khtml-user-select: none;
+        -webkit-user-select: none;
+        -o-user-select: none;
+      }
+
+      #checkbox {
+        /*pointer-events: none;*/
+        fill: white;
+        left: 5px;
+        opacity: 0;
+        position: absolute;
+        top: 5px;
+        cursor: pointer;
+        z-index: 2;
+
+        -webkit-transition: opacity .200s cubic-bezier(0.0,0.0,0.2,1);
+        transition: opacity .200s cubic-bezier(0.0,0.0,0.2,1);
+      }
+
+      #container {
+        @apply(--layout);
+        @apply(--layout-center-center);
+        height: 100%;
+        position: relative;
+        width: 100%;
+
+        -webkit-transition: transform .250s cubic-bezier(0.0,0.0,0.2,1);
+        transition: transform .250s cubic-bezier(0.0,0.0,0.2,1);
+      }
+
+      /* Selected */
+      :host([selected]) #container {
+        transform: scale(0.72);
+      }
+
+      :host([selected]) #checkbox {
+        background: white;
+        border-radius: 50%;
+        box-shadow: 0px 2px 4px rgba(0,0,0,0.30);
+        fill: var(--selectable-item-color, dodgerblue);
+        opacity: 1;
+      }
+
+      /* Force visible checkbox */
+      :host([mouseover]) #checkbox,
+      :host([select-on-down]) #checkbox {
+        opacity: 1;
+      }
+    </style>
+
+    <div id="container">
+      <content></content>
+    </div>
+
+    <svg id="checkbox"
+        role="checkbox"
+        width="24px"
+        heght="24px"
+        viewBox="0 0 24 24"
+        on-pointerup="_onCheckboxPointerUp">
+      <path d$="[[_computeSelected(selected)]]" />
+    </svg>
+
+  </template>
+</dom-module>
+
+<script>
+(function() {
+  'use strict';
+
+  Polymer({
+
+    is: 'selectable-item',
+
+    properties: {
+
+      selected: {
+        type: Boolean,
+        value: false,
+        notify: true,
+        observer: '_selectedChanged',
+        reflectToAttribute: true
+      },
+
+      mouseover: {
+        type: Boolean,
+        value: false,
+        readOnly: true,
+        reflectToAttribute: true
+      },
+
+      selectOnDown: {
+        type: Boolean,
+        reflectToAttribute: true,
+        value: false
+      },
+
+      _touchDownJob: Number,
+
+      _touchedDown: Boolean
+
+    },
+
+    created() {
+      this._onPointerOver = this._onPointerOver.bind(this);
+      this._onPointerOut = this._onPointerOut.bind(this);
+      this._onTouchMove = this._onTouchMove.bind(this);
+      this._onPointerDown = this._onPointerDown.bind(this);
+      this._onPointerUp = this._onPointerUp.bind(this);
+    },
+
+    attached() {
+      requestAnimationFrame(_ => {
+        this._toggleListeners(true);
+      });
+    },
+
+    detached() {
+      this._toggleListeners(false);
+    },
+
+    _toggleListeners(enable) {
+      const m = enable ? 'addEventListener' : 'removeEventListener';
+
+      this[m]('pointerover', this._onPointerOver);
+      this[m]('pointerout', this._onPointerOut);
+      this[m]('touchmove', this._onTouchMove);
+      this[m]('pointerdown', this._onPointerDown);
+      this[m]('pointerup', this._onPointerUp);
+    },
+
+    _selectedChanged(selected, old) {
+      this.fire('item-selected-change', {selected});
+    },
+
+    _onPointerOver(event) {
+      if (event.pointerType === 'mouse') {
+        this._setMouseover(true);
+      }
+    },
+
+    _onPointerOut(event) {
+      if (event.pointerType === 'mouse') {
+        this._setMouseover(false);
+      }
+    },
+
+    _onTouchMove(event) {
+      this._cancelTouchDownJob();
+    },
+
+    _onPointerDown(event) {
+      if (event.pointerType === 'touch') {
+        this._touchedDown = false;
+        this._touchDownJob = setTimeout(_ => {
+          if ('vibrate' in navigator) {
+            navigator.vibrate(30);
+          }
+
+          this._touchedDown = true;
+          this.selected = !this.selected;
+          this._touchDownJob = null;
+        }, 300);
+      }
+    },
+
+    _onPointerUp(event) {
+      if (event.pointerType === 'touch') {
+        this._cancelTouchDownJob();
+      }
+
+      if (!this._touchedDown && (this.selectOnDown || this.selected)) {
+        this.selected = !this.selected;
+      }
+
+      this._touchedDown = false;
+    },
+
+    _onCheckboxPointerUp(event) {
+      event.stopPropagation();
+
+      if (event.pointerType === 'mouse') {
+        this.selected = !this.selected;
+      }
+    },
+
+    _cancelTouchDownJob() {
+      if (this._touchDownJob) {
+        clearTimeout(this._touchDownJob);
+        this._touchDownJob = null;
+      }
+    },
+
+    _computeSelected(selected) {
+      if (selected) {
+        return 'M10,17L5,12L6.41,10.58L10,14.17L17.59,6.58L19,8M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z';
+      }
+      return 'M12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z';
+    }
+
+  });
+
+}());
+</script>
