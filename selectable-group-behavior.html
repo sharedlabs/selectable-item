@@ -39,10 +39,9 @@
     },
 
     attached() {
-      this._observer = this._observeItems(this);
-      this._updateItems();
-
       requestAnimationFrame(_ => {
+        this._observer = this._observeItems(this);
+        this._updateItems();
         this._toggleListeners(true);
       });
     },
