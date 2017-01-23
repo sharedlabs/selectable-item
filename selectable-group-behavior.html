@@ -25,6 +25,7 @@
       activeSelection: {
         type: Boolean,
         value: false,
+        notify: true,
         observer: '_activeSelectionChanged'
       }
 
@@ -36,6 +37,7 @@
 
     created() {
       this._onItemSelectedChange = this._onItemSelectedChange.bind(this);
+      this._onKeydown = this._onKeydown.bind(this);
     },
 
     attached() {
@@ -54,6 +56,7 @@
       const m = enable ? 'addEventListener' : 'removeEventListener';
 
       this[m]('item-selected-change', this._onItemSelectedChange);
+      document.body[m]('keydown', this._onKeydown);
     },
 
     _onItemSelectedChange() {
@@ -76,6 +79,16 @@
       var nodes = Polymer.dom(this).queryDistributedElements('selectable-item');
       this._setItems(nodes);
     },
+
+    _onKeydown(event) {
+      const escKey = 27;
+
+      if (event.keyCode === escKey) {
+        this.selection.forEach(item => {
+          item.selected = false;
+        });
+      }
+    }
 
   };
 
