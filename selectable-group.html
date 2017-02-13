@@ -1,4 +1,4 @@
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../polymer/polymer-element.html">
 <link rel="import" href="selectable-group-behavior.html">
 <link rel="import" href="selectable-item.html">
 
@@ -10,20 +10,25 @@
       }
     </style>
 
-    <content select="selectable-item"></content>
+    <slot select="selectable-item"></slot>
 
   </template>
+
+  <script>
+
+    class SelectableGroup extends SelectableGroupBehavior(Polymer.Element) {
+
+      static get is() {return 'selectable-group';}
+
+      static get config() {
+        return {
+          properties: {}
+        };
+      }
+
+    }
+
+    customElements.define(SelectableGroup.is, SelectableGroup);
+
+  </script>
 </dom-module>
-
-<script>
-
-  Polymer({
-
-    is: 'selectable-group',
-
-    behaviors: [
-      SelectableGroupBehavior
-    ]
-
-  });
-</script>

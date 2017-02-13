@@ -1,96 +1,98 @@
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../polymer/polymer-element.html">
 
 <script>
-(function() {
-  'use strict';
 
-  window.SelectableGroupBehavior = {
+window.SelectableGroupBehavior = subclass => class extends Polymer.Element {
 
-    is: 'selectable-group',
+  static get config() {
+    return {
+      properties: {
 
-    properties: {
+        /**
+         * The list of selectable-item
+         */
+        items: {
+          type: Array,
+          readOnly: true,
+          notify: true,
+          value: function() {
+            return [];
+          }
+        },
 
-      /**
-       * The list of selectable-item
-       */
-      items: {
-        type: Array,
-        readOnly: true,
-        notify: true,
-        value: function() {
-          return [];
+        activeSelection: {
+          type: Boolean,
+          value: false,
+          notify: true,
+          observer: '_activeSelectionChanged'
         }
-      },
 
-      activeSelection: {
-        type: Boolean,
-        value: false,
-        notify: true,
-        observer: '_activeSelectionChanged'
       }
+    };
+  }
 
-    },
+  get selection() {
+    return this.items.filter(item => item.selected);
+  }
 
-    get selection() {
-      return this.items.filter(item => item.selected);
-    },
+  constructor() {
+    super();
+    this._onItemSelectedChange = this._onItemSelectedChange.bind(this);
+    this._onKeydown = this._onKeydown.bind(this);
+  }
 
-    created() {
-      this._onItemSelectedChange = this._onItemSelectedChange.bind(this);
-      this._onKeydown = this._onKeydown.bind(this);
-    },
+  connectedCallback() {
+    super.connectedCallback();
+    requestAnimationFrame(_ => {
+      this._observer = this._observeItems(this);
+      this._updateItems();
+      this._toggleListeners(true);
+    });
+  }
 
-    attached() {
-      requestAnimationFrame(_ => {
-        this._observer = this._observeItems(this);
-        this._updateItems();
-        this._toggleListeners(true);
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this._toggleListeners(false);
+  }
+
+  _onItemSelectedChange() {
+    this.activeSelection = Boolean(this.selection.length);
+  }
+
+  _activeSelectionChanged() {
+    this.items.forEach(item => {
+      item.selectOnDown = this.activeSelection;
+    });
+  }
+
+  _onKeydown(event) {
+    const escKey = 27;
+
+    if (event.keyCode === escKey) {
+      this.selection.forEach(item => {
+        item.selected = false;
       });
-    },
-
-    detached() {
-      this._toggleListeners(false);
-    },
-
-    _toggleListeners(enable) {
-      const m = enable ? 'addEventListener' : 'removeEventListener';
-
-      this[m]('item-selected-change', this._onItemSelectedChange);
-      document.body[m]('keydown', this._onKeydown);
-    },
-
-    _onItemSelectedChange() {
-      this.activeSelection = Boolean(this.selection.length);
-    },
-
-    _activeSelectionChanged() {
-      this.items.forEach(item => {
-        item.selectOnDown = this.activeSelection;
-      });
-    },
-
-    _observeItems(node) {
-      return Polymer.dom(node).observeNodes(mutation => {
-        this._updateItems();
-      });
-    },
-
-    _updateItems: function() {
-      var nodes = Polymer.dom(this).queryDistributedElements('selectable-item');
-      this._setItems(nodes);
-    },
-
-    _onKeydown(event) {
-      const escKey = 27;
-
-      if (event.keyCode === escKey) {
-        this.selection.forEach(item => {
-          item.selected = false;
-        });
-      }
     }
+  }
 
-  };
+  _toggleListeners(enable) {
+    const m = enable ? 'addEventListener' : 'removeEventListener';
+    this[m]('item-selected-change', this._onItemSelectedChange);
+    document.body[m]('keydown', this._onKeydown);
+  }
 
-}());
+  _observeItems(node) {
+    return Polymer.dom(node).observeNodes(mutation => {
+      this._updateItems();
+    });
+  }
+
+  _updateItems() {
+    const nodes = Polymer.dom(this).queryDistributedElements('selectable-item');
+    // const nodes = this.querySelectorAll('selectable-item');
+    this._setItems(nodes);
+  }
+
+}
+
 </script>
