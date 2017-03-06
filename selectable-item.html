@@ -87,36 +87,34 @@
 
       static get is() {return 'selectable-item';}
 
-      static get config() {
+      static get properties() {
         return {
-          properties: {
 
-            selected: {
-              type: Boolean,
-              value: false,
-              notify: true,
-              observer: '_selectedChanged',
-              reflectToAttribute: true
-            },
+          selected: {
+            type: Boolean,
+            value: false,
+            notify: true,
+            observer: '_selectedChanged',
+            reflectToAttribute: true
+          },
 
-            mouseover: {
-              type: Boolean,
-              value: false,
-              readOnly: true,
-              reflectToAttribute: true
-            },
+          mouseover: {
+            type: Boolean,
+            value: false,
+            readOnly: true,
+            reflectToAttribute: true
+          },
 
-            selectOnDown: {
-              type: Boolean,
-              reflectToAttribute: true,
-              value: false
-            },
+          selectOnDown: {
+            type: Boolean,
+            reflectToAttribute: true,
+            value: false
+          },
 
-            _touchDownJob: Number,
+          _touchDownJob: Number,
 
-            _touchedDown: Boolean,
+          _touchedDown: Boolean,
 
-          }
         };
       }
 

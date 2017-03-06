@@ -4,30 +4,28 @@
 
 window.SelectableGroupBehavior = subclass => class extends Polymer.Element {
 
-  static get config() {
+  static get properties() {
     return {
-      properties: {
 
-        /**
-         * The list of selectable-item
-         */
-        items: {
-          type: Array,
-          readOnly: true,
-          notify: true,
-          value: function() {
-            return [];
-          }
-        },
-
-        activeSelection: {
-          type: Boolean,
-          value: false,
-          notify: true,
-          observer: '_activeSelectionChanged'
+      /**
+        * The list of selectable-item
+        */
+      items: {
+        type: Array,
+        readOnly: true,
+        notify: true,
+        value: function() {
+          return [];
         }
+      },
 
+      activeSelection: {
+        type: Boolean,
+        value: false,
+        notify: true,
+        observer: '_activeSelectionChanged'
       }
+
     };
   }
 
