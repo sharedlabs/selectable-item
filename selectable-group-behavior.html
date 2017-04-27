@@ -18,18 +18,23 @@ window.SelectableGroupBehavior = subclass => class extends Polymer.Element {
           return [];
         }
       },
-
-      activeSelection: {
-        type: Boolean,
-        value: false,
+      
+      selection: {
+        type: Array,
         notify: true,
-        observer: '_activeSelectionChanged'
+        value: _ => []
       }
 
     };
   }
 
-  get selection() {
+  static get observers() {
+    return [
+      '_selectionChanged(selection.*)'
+    ];
+  }
+
+  get getSelection() {
     return this.items.filter(item => item.selected);
   }
 
@@ -60,12 +65,18 @@ window.SelectableGroupBehavior = subclass => class extends Polymer.Element {
   }
 
   _onItemSelectedChange() {
-    this.activeSelection = Boolean(this.selection.length);
+    this._updateSelection();
   }
 
-  _activeSelectionChanged() {
+  _updateSelection() {
+    this.selection = this.items.filter(item => item.selected);
+  }
+
+  _selectionChanged() {
+    const activeSelection = !!this.selection.length;
+
     this.items.forEach(item => {
-      item.selectOnDown = this.activeSelection;
+      item.selectOnDown = activeSelection;
     });
   }
 
