@@ -35,22 +35,28 @@ window.SelectableGroupBehavior = subclass => class extends Polymer.Element {
 
   constructor() {
     super();
+
+    this._observer = null;
     this._onItemSelectedChange = this._onItemSelectedChange.bind(this);
     this._onKeydown = this._onKeydown.bind(this);
   }
 
   connectedCallback() {
     super.connectedCallback();
+
     requestAnimationFrame(_ => {
-      this._observer = this._observeItems(this);
       this._updateItems();
-      this._toggleListeners(true);
+      this._observer = this._observeItems(this);
+      this._toggleListeners({enable: true});
     });
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    this._toggleListeners(false);
+
+    this._toggleListeners({enable: false});
+    this._observer.disconnect();
+    this._observer = null;
   }
 
   _onItemSelectedChange() {
@@ -73,21 +79,21 @@ window.SelectableGroupBehavior = subclass => class extends Polymer.Element {
     }
   }
 
-  _toggleListeners(enable) {
+  _toggleListeners({enable}) {
     const m = enable ? 'addEventListener' : 'removeEventListener';
+
     this[m]('item-selected-change', this._onItemSelectedChange);
     document.body[m]('keydown', this._onKeydown);
   }
 
   _observeItems(node) {
-    return Polymer.dom(node).observeNodes(mutation => {
+    return new MutationObserver(mutations => {
       this._updateItems();
-    });
+    }).observe(this, {subtree: true, childList: true});
   }
 
   _updateItems() {
-    const nodes = Polymer.dom(this).queryDistributedElements('selectable-item');
-    // const nodes = this.querySelectorAll('selectable-item');
+    const nodes = Array.from(this.querySelectorAll('selectable-item'));
     this._setItems(nodes);
   }
 

@@ -140,6 +140,7 @@
       _selectedChanged(selected, old) {
         this.dispatchEvent(new CustomEvent('item-selected-change', {
           composed: true,
+          bubbles: true,
           detail: {selected}
         }));
       }
