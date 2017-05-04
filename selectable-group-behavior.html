@@ -98,9 +98,11 @@ window.SelectableGroupBehavior = subclass => class extends Polymer.Element {
   }
 
   _observeItems(node) {
-    return new MutationObserver(mutations => {
+    const observer = new MutationObserver(mutations => {
       this._updateItems();
-    }).observe(this, {subtree: true, childList: true});
+    })
+    observer.observe(this, {subtree: true, childList: true});
+    return observer;
   }
 
   _updateItems() {
